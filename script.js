@@ -66,5 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("cy", function (d) { return y(d.platelets); } )
             .attr("r", 5)
             .style("fill", "#69b3a2")
+
+        // Assuming 'svg' is your SVG element where circles are appended
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
     }
 });
