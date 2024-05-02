@@ -5,7 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
         age: +d.age,
         ejectionFraction: +d.ejection_fraction,
         serumCreatinine: +d.serum_creatinine,
-        // continue mapping other fields
+        amaemia: +d.anaemia,
+        diabetes: +d.diabetes,
+        creatinePhosphokinase: +d.creatine_phosphokinase,
+        highBloodPressure: +d.high_blood_pressure,
+        platelets: +d.platelets,
+        serumSodium: +d.serum_sodium,
+        sex: +d.sex,
+        smoking: +d.smoking,
+        time: +d.time,
+        deathEvent: +d.DEATH_EVENT
+
     })).then(function(data) {
         console.log(data); // Check data load
         drawChart(data); // Initial chart draw
