@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('JavaScript loaded!');
 
     // Load and parse the data
-    d3.csv("C:\Users\paul_\OneDrive - Indiana University\Current Classes\Data Visualization\heart_failure_clinical_records_dataset.csv", function(d) {
+    d3.csv("heart_failure_clinical_records_dataset.csv", function(d) {
         return {
             age: +d.age,
             anaemia: +d.anaemia,
