@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
         drawChart(data);
     });
 
-    // Function to draw the chart
     function drawChart(data) {
         // Set dimensions and margins for the chart
         const margin = {top: 20, right: 30, bottom: 40, left: 90},
@@ -38,8 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
           .append("g")
-            .attr("transform",
-                  "translate(" + margin.left + "," + margin.top + ")");
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         // Add X axis
         const x = d3.scaleLinear()
@@ -59,17 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Tooltip setup
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
-            .style("opacity", 0)
-            .style("position", "absolute")
-            .style("text-align", "center")
-            .style("width", "120px")
-            .style("height", "28px")
-            .style("padding", "2px")
-            .style("font", "12px sans-serif")
-            .style("background", "lightsteelblue")
-            .style("border", "0px")
-            .style("border-radius", "8px")
-            .style("pointer-events", "none");
+            .style("opacity", 0);
 
         // Add dots and tooltips
         svg.selectAll("dot")
@@ -92,5 +80,5 @@ document.addEventListener('DOMContentLoaded', function() {
                     .duration(500)
                     .style("opacity", 0);
             });
-    }
-});
+    } // This is the missing bracket if any
+}); // Close for DOMContentLoaded
