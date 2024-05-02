@@ -80,5 +80,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     .duration(500)
                     .style("opacity", 0);
             });
+
+        function updateVisualization(selectedVariable, data) {
+            const survived = data.filter(d => d.DEATH_EVENT === 0);
+            const deceased = data.filter(d => d.DEATH_EVENT === 1);
+        
+            // Update the scatter plot or box plot here
+            // Example for updating a scatter plot:
+            const circles = svg.selectAll("circle")
+                .data(data);
+            
+            circles.enter().append("circle")
+                .merge(circles)
+                .attr("cx", d => xScale(d[selectedVariable]))
+                .attr("cy", d => yScale(d.DEATH_EVENT)) // Simplistic; consider adjusting
+                .attr("fill", d => d.DEATH_EVENT === 1 ? "red" : "green")
+                .attr("r", 5);
+        
+            circles.exit().remove();
+        }
+
     } // This is the missing bracket if any
 }); // Close for DOMContentLoaded
