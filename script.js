@@ -72,5 +72,23 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-    }
-});
+        svg.selectAll("circle")
+            .data(data)
+            .enter().append("circle")
+            .attr("cx", function(d) { return xScale(d.x); })
+            .attr("cy", function(d) { return yScale(d.y); })
+            .attr("r", 5)
+            .style("fill", "red")
+            .on("mouseover", function(event, d) {
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html("Details: " + d.details)
+                    .style("left", (event.pageX + 5) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+    });
