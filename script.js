@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add X axis
         const x = d3.scaleLinear()
           .domain([0, 100])
-          .range([ 0, width ]);
+          .range([0, width]);
         svg.append("g")
           .attr("transform", "translate(0," + height + ")")
           .call(d3.axisBottom(x));
@@ -52,38 +52,38 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add Y axis
         const y = d3.scaleLinear()
           .domain([0, 500000])
-          .range([ height, 0]);
+          .range([height, 0]);
         svg.append("g")
           .call(d3.axisLeft(y));
 
-        // Add dots
-        svg.append('g')
-          .selectAll("dot")
-          .data(data)
-          .enter()
-          .append("circle")
-            .attr("cx", function (d) { return x(d.age); } )
-            .attr("cy", function (d) { return y(d.platelets); } )
-            .attr("r", 5)
-            .style("fill", "#69b3a2")
-
-        // Assuming 'svg' is your SVG element where circles are appended
+        // Tooltip setup
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
-            .style("opacity", 0);
+            .style("opacity", 0)
+            .style("position", "absolute")
+            .style("text-align", "center")
+            .style("width", "120px")
+            .style("height", "28px")
+            .style("padding", "2px")
+            .style("font", "12px sans-serif")
+            .style("background", "lightsteelblue")
+            .style("border", "0px")
+            .style("border-radius", "8px")
+            .style("pointer-events", "none");
 
-        svg.selectAll("circle")
+        // Add dots and tooltips
+        svg.selectAll("dot")
             .data(data)
             .enter().append("circle")
-            .attr("cx", function(d) { return xScale(d.x); })
-            .attr("cy", function(d) { return yScale(d.y); })
+            .attr("cx", function (d) { return x(d.age); })
+            .attr("cy", function (d) { return y(d.platelets); })
             .attr("r", 5)
-            .style("fill", "red")
+            .style("fill", "#69b3a2")
             .on("mouseover", function(event, d) {
                 tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
-                tooltip.html("Details: " + d.details)
+                tooltip.html("Age: " + d.age + "<br/>Platelets: " + d.platelets)
                     .style("left", (event.pageX + 5) + "px")
                     .style("top", (event.pageY - 28) + "px");
             })
@@ -91,4 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip.transition()
                     .duration(500)
                     .style("opacity", 0);
-    });
+            });
+    }
+});
