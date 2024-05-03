@@ -19,6 +19,14 @@
             opacity: 0.1;  /* Adjust opacity to make hidden elements partially visible */
             /* display: none;  Uncomment this line if you prefer to completely hide elements */
         }
+        .tooltip {
+              position: absolute;
+              background-color: rgba(0, 0, 0, 0.8);
+              color: white;
+              padding: 5px;
+              border-radius: 5px;
+              pointer-events: none;
+        }
     </style>
 </head>
 <body>
