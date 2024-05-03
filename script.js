@@ -51,8 +51,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("height", height)
     .attr("viewBox", [-padding, 0, width, height]);
   
-  svg.append("style")
-    .text(`circle.hidden { fill: #000; fill-opacity: 1; r: 1px; }`);
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", padding / 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px")
+    .attr("font-weight", "bold")
+    .text("Finding Meaning in Heart Disease Patient Outcomes");
   
   // Define the horizontal axis (it will be applied separately for each column).
   const axisx = d3.axisBottom()
