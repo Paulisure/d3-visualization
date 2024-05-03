@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My D3 Visualization</title>
+    <title>Scatterplot Matrix</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
-    <!-- Optional: Link to an external CSS file for styling -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        .frame {
+            fill: none;
+            stroke: #aaa;
+        }
+        .brush .extent {
+            fill-opacity: 0.3;
+            stroke: #fff;
+            shape-rendering: crispEdges;
+        }
+    </style>
 </head>
 <body>
-    <label for="variable-select">Select a variable to analyze:</label>
-        <select id="variable-select">
-            <option value="age">Age</option>
-            <option value="ejectionFraction">Ejection Fraction</option>
-            <option value="serumCreatinine">Serum Creatinine</option>
-            <option value="amaemia">Anaemia</option>
-            <option value="diabetes">Diabetes</option>
-            <option value="creatinePhosphokinase">Creatinine Phosphokinase</option>
-            <option value="highBloodPressure">High Blood Pressure</option>
-            <option value="platelets">Platelets</option>
-            <option value="serumSodium">Serum Sodium</option>
-            <option value="sex">Sex</option>
-            <option value="smoking">Smoking</option>
-            <option value="time">Time</option>
-            <option value="deathEvent">Death Event</option>
-        </select>
-
-    </select>
-    <div id="chart"></div>
+    <div id="scatterplot_matrix"></div>
     <script src="script.js"></script>
 </body>
 </html>
-
