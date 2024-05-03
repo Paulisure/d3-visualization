@@ -51,13 +51,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     .style("text-anchor", "start")
     .style("font-size", "12px")
     .text(d => d.label);
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", padding / 2)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "16px")
-    .attr("font-weight", "bold")
-    .text("Finding Meaning in Heart Disease Patient Outcomes");
   
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
