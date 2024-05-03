@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     .data(variables)
     .join("g")
     .attr("class", "x axis")
-    .attr("transform", (d, i) => `translate(${i * size},0)`)
+    .attr("transform", (d, i) => `translate(${i * size},${size * variables.length})`)
     .each(function(d) { d3.select(this).call(xAxis.scale(xScale[d])); });
 
   svg.selectAll(".y.axis")
@@ -47,23 +47,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     .join("g")
     .attr("class", "cell")
     .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
-  
+
   cell.each(function([i, j]) {
-    console.log("i:", i);
-    console.log("j:", j);
-  
     d3.select(this).selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("cx", d => {
-        console.log("d:", d);
-        console.log("d[i]:", d[i]);
-        return xScale[i](d[i]);
-      })
-      .attr("cy", d => {
-        console.log("d[j]:", d[j]);
-        return yScale[j](d[j]);
-      })
+      .attr("cx", d => xScale[variables[i]](d[variables[i]]))
+      .attr("cy", d => yScale[variables[j]](d[variables[j]]))
       .attr("r", 3)
       .attr("fill", d => d.DEATH_EVENT ? "red" : "green");
   });
@@ -91,7 +81,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     let selected = [];
     if (selection) {
       const [[x0, y0], [x1, y1]] = selection;
-      selected = data.filter(d => x0 <= xScale[i](d[i]) && xScale[i](d[i]) <= x1 && y0 <= yScale[j](d[j]) && yScale[j](d[j]) <= y1);
+      selected = data.filter(d =>
+        x0 <= xScale[variables[i]](d[variables[i]]) && xScale[variables[i]](d[variables[i]]) <= x1 &&
+        y0 <= yScale[variables[j]](d[variables[j]]) && yScale[variables[j]](d[variables[j]]) <= y1
+      );
     }
     cell.selectAll("circle")
       .classed("hidden", d => !selected.includes(d));
