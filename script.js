@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   const legend = svg.append("g")
     .attr("class", "legend")
-    .attr("transform", `translate(${width - 120}, ${padding})`);
+    .attr("transform", `translate(${width - 80}, ${padding})`);
   
   const legendItem = legend.selectAll(".legend-item")
     .data(legendData)
