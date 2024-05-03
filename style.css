@@ -7,25 +7,27 @@
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <style>
         .frame {
-            fill: none;
-            stroke: #aaa;
+          fill: none;
+          stroke: #aaa;
         }
+        
         .brush .extent {
-            fill-opacity: 0.3;
-            stroke: #fff;
-            shape-rendering: crispEdges;
+          fill-opacity: 0.3;
+          stroke: #fff;
+          shape-rendering: crispEdges;
         }
+        
         .hidden {
-            opacity: 0.1;  /* Adjust opacity to make hidden elements partially visible */
-            /* display: none;  Uncomment this line if you prefer to completely hide elements */
+          opacity: 0.1;
         }
+        
         .tooltip {
-              position: absolute;
-              background-color: rgba(0, 0, 0, 0.8);
-              color: white;
-              padding: 5px;
-              border-radius: 5px;
-              pointer-events: none;
+          position: absolute;
+          background-color: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 5px;
+          border-radius: 5px;
+          pointer-events: none;
         }
     </style>
 </head>
