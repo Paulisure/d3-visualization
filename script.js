@@ -13,13 +13,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-padding, 0, width, height]);
-  svg.append("text")
-    .attr("x", (width - 150) / 2) // Center the title within the scatterplot matrix
-    .attr("y", padding / 6)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "20px")
-    .attr("font-weight", "bold")
-    .text("Finding Meaning in Heart Disease Patient Outcomes");
   
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
