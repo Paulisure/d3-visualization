@@ -1,76 +1,89 @@
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('JavaScript loaded!');
+document.addEventListener('DOMContentLoaded', async function() {
+  const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
 
-  d3.csv("heart_failure_clinical_records_dataset.csv", d => ({
-    age: +d.age,
-    ejectionFraction: +d.ejection_fraction,
-    serumCreatinine: +d.serum_creatinine,
-    anaemia: +d.anaemia,
-    diabetes: +d.diabetes,
-    creatinePhosphokinase: +d.creatinine_phosphokinase,
-    highBloodPressure: +d.high_blood_pressure,
-    platelets: +d.platelets,
-    serumSodium: +d.serum_sodium,
-    sex: +d.sex,
-    smoking: +d.smoking,
-    time: +d.time,
-    deathEvent: +d.DEATH_EVENT
-  })).then(function(data) {
-    console.log(data); // Check data load
-    drawChart(data); // Initial chart draw
-    setupDropdown(data); // Setup dropdown change handler
+  // Dimensions for each individual plot
+  const size = 150;
+  const padding = 20;
+  const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia'];
+
+  const svg = d3.select("#scatterplot_matrix").append("svg")
+    .attr("width", size * variables.length + padding)
+    .attr("height", size * variables.length + padding)
+    .style("font", "10px sans-serif");
+
+  const xScale = {}, yScale = {};
+  variables.forEach(variable => {
+    const value = d => +d[variable];
+    const domain = d3.extent(data, value);
+    xScale[variable] = d3.scaleLinear(domain, [padding / 2, size - padding / 2]);
+    yScale[variable] = d3.scaleLinear(domain, [size - padding / 2, padding / 2]);
   });
 
-  function setupDropdown(data) {
-    d3.select('#variable-select').on('change', function() {
-      var selectedVariable = d3.select(this).property('value');
-      updateVisualization(selectedVariable, data);
-    });
-  }
+  const xAxis = d3.axisBottom()
+    .ticks(6)
+    .tickSize(size * variables.length);
 
-  function drawChart(data, variable = 'age') {
-    const svgWidth = 460, svgHeight = 400;
-    const margin = { top: 20, right: 30, bottom: 40, left: 90 };
-    const width = svgWidth - margin.left - margin.right;
-    const height = svgHeight - margin.top - margin.bottom;
+  const yAxis = d3.axisLeft()
+    .ticks(6)
+    .tickSize(-size * variables.length);
 
-    d3.select("#chart").html(""); // Clear existing chart
+  svg.selectAll(".x.axis")
+    .data(variables)
+    .join("g")
+    .attr("class", "x axis")
+    .attr("transform", (d, i) => `translate(${i * size},0)`)
+    .each(function(d) { d3.select(this).call(xAxis.scale(xScale[d])); });
 
-    const svg = d3.select("#chart").append("svg")
-      .attr("width", svgWidth)
-      .attr("height", svgHeight)
-      .append("g")
-      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  svg.selectAll(".y.axis")
+    .data(variables)
+    .join("g")
+    .attr("class", "y axis")
+    .attr("transform", (d, i) => `translate(0,${i * size})`)
+    .each(function(d) { d3.select(this).call(yAxis.scale(yScale[d])); });
 
-    // Update scales based on selected variable
-    const xScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d[variable])])
-      .range([0, width]);
+  // Create scatter plots
+  const cell = svg.selectAll("g.cell")
+    .data(d3.cross(variables, variables))
+    .join("g")
+    .attr("class", "cell")
+    .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
 
-    svg.append("g")
-      .attr("transform", `translate(0, ${height})`)
-      .call(d3.axisBottom(xScale));
-
-    const yScale = d3.scaleLinear()
-      .domain([0, 1]) // Assume binary DEATH_EVENT for simplicity
-      .range([height, 0]);
-
-    svg.append("g")
-      .call(d3.axisLeft(yScale));
-
-    // Add circles
-    svg.selectAll("circle")
+  cell.each(function([i, j]) {
+    d3.select(this).selectAll("circle")
       .data(data)
-      .enter()
-      .append("circle")
-      .attr("cx", d => xScale(d[variable]))
-      .attr("cy", d => yScale(d.deathEvent))
-      .attr("r", 5)
-      .attr("fill", d => d.deathEvent ? "red" : "green");
+      .join("circle")
+      .attr("cx", d => xScale[i](d[i]))
+      .attr("cy", d => yScale[j](d[j]))
+      .attr("r", 3)
+      .attr("fill", d => d.DEATH_EVENT ? "red" : "green");
+  });
+
+  // Add brushing functionality
+  const brush = d3.brush()
+    .extent([[0, 0], [size, size]])
+    .on("start", brushstarted)
+    .on("brush", brushed);
+
+  cell.call(brush);
+
+  let brushCell;
+
+  function brushstarted() {
+    if (brushCell !== this) {
+      d3.select(brushCell).call(brush.move, null);
+      brushCell = this;
+    }
   }
 
-  function updateVisualization(selectedVariable, data) {
-    console.log("Updating chart for variable:", selectedVariable);
-    drawChart(data, selectedVariable);
+  function brushed({selection}) {
+    if (selection) {
+      const [[x0, y0], [x1, y1]] = selection;
+      cell.selectAll("circle")
+        .classed("hidden", d => {
+          return x0 > xScale[i](d[i]) || x1 < xScale[i](d[i]) || y0 > yScale[j](d[j]) || y1 < yScale[j](d[j]);
+        });
+    } else {
+      cell.selectAll("circle").classed("hidden", false);
+    }
   }
 });
