@@ -145,133 +145,124 @@ function updateBarChart(selectedData, allData, columns) {
     const fields = columns.filter(column => !["DEATH_EVENT"].includes(column));
 
     const impactData = fields.map(field => {
-        // Calculation of impact factors as defined
-        const impactFactor = ...; // logic to calculate impact factor
-        return { field, impactFactor: isNaN(impactFactor) ? 0 : impactFactor };
+        let selectedPositive, selectedTotal, allPositive, allTotal;
+
+        if (["age", "ejection_fraction", "serum_sodium", "platelets"].includes(field)) {
+            const selectedMedian = d3.median(selectedData, d => +d[field]);
+            const allMedian = d3.median(allData, d => +d[field]);
+
+            selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= selectedMedian).length;
+            selectedTotal = selectedData.filter(d => +d[field] >= selectedMedian).length;
+            allPositive = allData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= allMedian).length;
+            allTotal = allData.filter(d => +d[field] >= allMedian).length;
+        } else {
+            selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
+            selectedTotal = selectedData.filter(d => d[field] === "1").length;
+            allPositive = allData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
+            allTotal = allData.filter(d => d[field] === "1").length;
+        }
+
+        const selectedPositivePercentage = selectedTotal > 0 ? selectedPositive / selectedTotal : 0;
+        const allPositivePercentage = allTotal > 0 ? allPositive / allTotal : 0;
+
+        const impactFactor = selectedPositivePercentage / allPositivePercentage;
+
+        return {
+            field,
+            impactFactor: isNaN(impactFactor) ? 0 : impactFactor
+        };
     });
 
     impactData.sort((a, b) => b.impactFactor - a.impactFactor);
 
-  
-      if (["age", "ejection_fraction", "serum_sodium", "platelets"].includes(field)) {
-        const selectedMedian = d3.median(selectedData, d => +d[field]);
-        const allMedian = d3.median(allData, d => +d[field]);
-  
-        selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= selectedMedian).length;
-        selectedTotal = selectedData.filter(d => +d[field] >= selectedMedian).length;
-        allPositive = allData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= allMedian).length;
-        allTotal = allData.filter(d => +d[field] >= allMedian).length;
-      } else {
-        selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
-        selectedTotal = selectedData.filter(d => d[field] === "1").length;
-        allPositive = allData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
-        allTotal = allData.filter(d => d[field] === "1").length;
-      }
-  
-      const selectedPositivePercentage = selectedTotal > 0 ? selectedPositive / selectedTotal : 0;
-      const allPositivePercentage = allTotal > 0 ? allPositive / allTotal : 0;
-  
-      const impactFactor = selectedPositivePercentage / allPositivePercentage;
-  
-      return {
-        field,
-        impactFactor: isNaN(impactFactor) ? 0 : impactFactor
-      };
-    });
-  
-    impactData.sort((a, b) => b.impactFactor - a.impactFactor);
-  
     const xScale = d3.scaleBand()
-      .domain(impactData.map(d => d.field))
-      .range([0, barChartWidth])
-      .padding(0.2);
-  
+        .domain(impactData.map(d => d.field))
+        .range([0, barChartWidth])
+        .padding(0.2);
+
     const yScale = d3.scaleLinear()
-      .domain([0, d3.max(impactData, d => d.impactFactor)])
-      .range([barChartHeight, 0]);
-  
+        .domain([0, d3.max(impactData, d => d.impactFactor)])
+        .range([barChartHeight, 0]);
+
     // Add title and subtitle
     const title = barChartSvg.append("text")
-      .attr("x", barChartWidth / 2)
-      .attr("y", -barChartMargin.top / 2)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "16px")
-      .attr("font-weight", "bold")
-      .text("Impact Factors of Selected Fields");
-  
+        .attr("x", barChartWidth / 2)
+        .attr("y", -barChartMargin.top / 2)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "16px")
+        .attr("font-weight", "bold")
+        .text("Impact Factors of Selected Fields");
+
     const subtitle = barChartSvg.append("text")
-      .attr("x", barChartWidth / 2)
-      .attr("y", -barChartMargin.top / 4)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
-      .text("Comparing the influence of fields on positive death events");
-  
+        .attr("x", barChartWidth / 2)
+        .attr("y", -barChartMargin.top / 4)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "12px")
+        .text("Comparing the influence of fields on positive death events");
+
     // Improve axis labels
     barChartSvg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -barChartHeight / 2)
-      .attr("y", -barChartMargin.left + 15)
-      .attr("text-anchor", "middle")
-      .text("Impact Factor");
-  
+        .attr("transform", "rotate(-90)")
+        .attr("x", -barChartHeight / 2)
+        .attr("y", -barChartMargin.left + 15)
+        .attr("text-anchor", "middle")
+        .text("Impact Factor");
+
     barChartSvg.append("text")
-      .attr("x", barChartWidth / 2)
-      .attr("y", barChartHeight + barChartMargin.bottom - 5)
-      .attr("text-anchor", "middle")
-      .text("Fields");
-  
+        .attr("x", barChartWidth / 2)
+        .attr("y", barChartHeight + barChartMargin.bottom - 5)
+        .attr("text-anchor", "middle")
+        .text("Fields");
+
     barChartSvg.append("g")
-      .attr("transform", `translate(0,${barChartHeight})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll("text")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end");
-  
+        .attr("transform", `translate(0,${barChartHeight})`)
+        .call(d3.axisBottom(xScale))
+        .selectAll("text")
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "end");
+
     barChartSvg.append("g")
-      .call(d3.axisLeft(yScale));
-  
+        .call(d3.axisLeft(yScale));
+
     // Highlight top influential fields
     const topCount = 3; // Number of top influential fields to highlight
-  
+
     barChartSvg.selectAll(".bar")
-      .data(impactData)
-      .join("rect")
-      .attr("class", "bar")
-      .attr("x", d => xScale(d.field))
-      .attr("y", d => yScale(d.impactFactor))
-      .attr("width", xScale.bandwidth())
-      .attr("height", d => barChartHeight - yScale(d.impactFactor))
-      .attr("fill", (d, i) => i < topCount ? "darkred" : "steelblue");
-  
+        .data(impactData)
+        .join("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.field))
+        .attr("y", d => yScale(d.impactFactor))
+        .attr("width", xScale.bandwidth())
+        .attr("height", d => barChartHeight - yScale(d.impactFactor))
+        .attr("fill", (d, i) => i < topCount ? "darkred" : "steelblue");
+
     // Add tooltips
     const tooltip = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-  
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     barChartSvg.selectAll(".bar")
-      .on("mouseover", function(event, d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", 0.9);
-        tooltip.html(`Field: ${d.field}<br>Impact Factor: ${d3.format(".2f")(d.impactFactor)}`)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY - 28) + "px");
-      })
-      .on("mouseout", function(d) {
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-      });
-  
+        .on("mouseover", function(event, d) {
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+            tooltip.html(`Field: ${d.field}<br>Impact Factor: ${d3.format(".2f")(d.impactFactor)}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
     barChartSvg.selectAll(".bar-label")
-      .data(impactData)
-      .join("text")
-      .attr("class", "bar-label")
-      .attr("x", d => xScale(d.field) + xScale.bandwidth() / 2)
-      .attr("y", d => yScale(d.impactFactor) - 5)
-      .attr("text-anchor", "middle")
-      .text(d => d3.format(".2f")(d.impactFactor));
-  }
-    // Call updateBarChart with initial data
-    updateBarChart(data, data, variables);
-});
+        .data(impactData)
+        .join("text")
+        .attr("class", "bar-label")
+        .attr("x", d => xScale(d.field) + xScale.bandwidth() / 2)
+        .attr("y", d => yScale(d.impactFactor) - 5)
+        .attr("text-anchor", "middle")
+        .text(d => d3.format(".2f")(d.impactFactor));
+}
