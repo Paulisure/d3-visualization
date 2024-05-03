@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
   
   // Specify the chart's dimensions.
-  const width = 1206;
+  const width = 1206 + 150;
   const height = width;
   const padding = 36;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-padding, 0, width, height]);
+  svg.append("text")
+    .attr("x", (width - 150) / 2) // Center the title within the scatterplot matrix
+    .attr("y", padding / 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px")
+    .attr("font-weight", "bold")
+    .text("Finding Meaning in Heart Disease Patient Outcomes");
   // Create the legend
   const legendData = [
     { label: "Non-Death Event", color: "#009E73" },
@@ -21,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   const legend = svg.append("g")
     .attr("class", "legend")
-    .attr("transform", `translate(${width - 80}, ${padding})`);
+    .attr("transform", `translate(${width - 120}, ${padding})`);
   
   const legendItem = legend.selectAll(".legend-item")
     .data(legendData)
