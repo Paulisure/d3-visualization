@@ -2,17 +2,30 @@ document.addEventListener('DOMContentLoaded', async function() {
   const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
   
   // Specify the chart's dimensions.
-  const width = 928;
+  const width = 1206;
   const height = width;
-  const padding = 28;
+  const padding = 36;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
   const columns = variables;
   const size = (width - (columns.length + 1) * padding) / columns.length + padding;
   
   // Define the horizontal scales (one for each row).
-  const x = columns.map(c => d3.scaleLinear()
-    .domain(d3.extent(data, d => +d[c]))
-    .rangeRound([padding / 2, size - padding / 2]));
+  const x = columns.map(c => {
+    if (c === 'high_blood_pressure' || c === 'anaemia' || c === 'smoking' || c === 'diabetes' || c === 'sex') {
+      return d3.scaleOrdinal()
+        .domain(["0", "1"])
+        .range([padding / 2, size - padding / 2]);
+    } else if (c === 'platelets') {
+      return d3.scaleLinear()
+        .domain(d3.extent(data, d => +d[c]))
+        .nice()
+        .rangeRound([padding / 2, size - padding / 2]);
+    } else {
+      return d3.scaleLinear()
+        .domain(d3.extent(data, d => +d[c]))
+        .rangeRound([padding / 2, size - padding / 2]);
+    }
+  });
   
   // Define the companion vertical scales (one for each column).
   const y = x.map(x => x.copy().range([size - padding / 2, padding / 2]));
@@ -33,7 +46,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Define the horizontal axis (it will be applied separately for each column).
   const axisx = d3.axisBottom()
     .ticks(6)
-    .tickSize(size * columns.length);
+    .tickSize(size * columns.length)
+    .tickFormat(d => {
+      if (typeof d === 'number') {
+        return d;
+      } else {
+        return d === '0' ? 'No' : 'Yes';
+      }
+    });
   
   const xAxis = g => g.selectAll("g").data(x).join("g")
     .attr("transform", (d, i) => `translate(${i * size},0)`)
@@ -44,7 +64,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Define the vertical axis (it will be applied separately for each row).
   const axisy = d3.axisLeft()
     .ticks(6)
-    .tickSize(-size * columns.length);
+    .tickSize(-size * columns.length)
+    .tickFormat(d => {
+      if (typeof d === 'number') {
+        return d;
+      } else {
+        return d === '0' ? 'No' : 'Yes';
+      }
+    });
   
   const yAxis = g => g.selectAll("g").data(y).join("g")
     .attr("transform", (d, i) => `translate(0,${i * size})`)
@@ -98,10 +125,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("fill", d => color(d.DEATH_EVENT));
 
   // Ignore this line if you don't need the brushing behavior.
-  cell.call(brush, circle, svg, {padding, size, x, y, columns});
+  cell.call(brush, circle, svg, {padding, size, x, y, columns, data});
 });
 
-function brush(cell, circle, svg, {padding, size, x, y, columns}) {
+function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
   const brush = d3.brush()
     .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
     .on("start", brushstarted)
