@@ -6,28 +6,26 @@
     <title>Scatterplot Matrix</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <style>
-        .frame {
-          fill: none;
-          stroke: #aaa;
+        .legend {
+          display: flex;
+          justify-content: center;
+          margin-top: 10px;
         }
         
-        .brush .extent {
-          fill-opacity: 0.3;
-          stroke: #fff;
-          shape-rendering: crispEdges;
+        .legend-item {
+          display: flex;
+          align-items: center;
+          margin-right: 20px;
         }
         
-        .hidden {
-          opacity: 0.1;
+        .legend-color {
+          width: 15px;
+          height: 15px;
+          margin-right: 5px;
         }
         
-        .tooltip {
-          position: absolute;
-          background-color: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 5px;
-          border-radius: 5px;
-          pointer-events: none;
+        .legend-label {
+          font-size: 12px;
         }
     </style>
 </head>
