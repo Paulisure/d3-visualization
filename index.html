@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Scatterplot Matrix</title>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <style>
-        .frame {
-            fill: none;
-            stroke: #aaa;
-        }
-        .brush .extent {
-            fill-opacity: 0.3;
-            stroke: #fff;
-            shape-rendering: crispEdges;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scatterplot Matrix</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <style>
+    .frame {
+      fill: none;
+      stroke: #aaa;
+    }
+    .brush .extent {
+      fill-opacity: 0.3;
+      stroke: #fff;
+      shape-rendering: crispEdges;
+    }
+    .hidden {
+      opacity: 0.1;
+    }
+  </style>
 </head>
 <body>
-    <div id="scatterplot_matrix"></div>
-    <script src="script.js"></script>
+  <div>
+    <label for="death-event-checkbox">Show only death events:</label>
+    <input type="checkbox" id="death-event-checkbox">
+  </div>
+  <div id="scatterplot_matrix"></div>
+  <script src="script.js"></script>
 </body>
 </html>
