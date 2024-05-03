@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-padding, 0, width, height]);
-  
+
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
     if (c === 'high_blood_pressure' || c === 'anaemia' || c === 'smoking' || c === 'diabetes') {
