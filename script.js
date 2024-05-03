@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("viewBox", [-padding, 0, width, height]);
   // Create the legend
   const legendData = [
-    { label: "Non-Death Event", color: "#FDE725" },
-    { label: "Death Event", color: "#440154" }
+    { label: "Non-Death Event", color: "#009E73" },
+    { label: "Death Event", color: "#D55E00" }
   ];
   
   const legend = svg.append("g")
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Define the color scale.
   const color = d3.scaleOrdinal()
     .domain(["0", "1"])
-    .range(["#FDE725", "#440154"]);
+    .range(["#009E73", "#D55E00"]);
   
   svg.append("style")
     .text(`circle.hidden { fill: #000; fill-opacity: 1; r: 1px; }`);
