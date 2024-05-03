@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Dimensions for each individual plot
   const size = 150;
   const padding = 20;
-  const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia'];
+  const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
 
   const svg = d3.select("#scatterplot_matrix").append("svg")
     .attr("width", size * variables.length + padding)
@@ -47,13 +47,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     .join("g")
     .attr("class", "cell")
     .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
-
+  
   cell.each(function([i, j]) {
+    console.log("i:", i);
+    console.log("j:", j);
+  
     d3.select(this).selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("cx", d => xScale[i](d[i]))
-      .attr("cy", d => yScale[j](d[j]))
+      .attr("cx", d => {
+        console.log("d:", d);
+        console.log("d[i]:", d[i]);
+        return xScale[i](d[i]);
+      })
+      .attr("cy", d => {
+        console.log("d[j]:", d[j]);
+        return yScale[j](d[j]);
+      })
       .attr("r", 3)
       .attr("fill", d => d.DEATH_EVENT ? "red" : "green");
   });
