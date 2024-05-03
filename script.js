@@ -13,7 +13,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-padding, 0, width, height]);
+  // Create the legend
+  const legendData = [
+    { label: "Non-Death Event", color: "green" },
+    { label: "Death Event", color: "red" }
+  ];
   
+  const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - 120}, ${padding})`);
+  
+  const legendItem = legend.selectAll(".legend-item")
+    .data(legendData)
+    .enter()
+    .append("g")
+    .attr("class", "legend-item")
+    .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+  
+  legendItem.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 12)
+    .attr("height", 12)
+    .style("fill", d => d.color);
+  
+  legendItem.append("text")
+    .attr("x", 18)
+    .attr("y", 9)
+    .attr("dy", ".35em")
+    .style("text-anchor", "start")
+    .style("font-size", "12px")
+    .text(d => d.label);
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", padding / 2)
