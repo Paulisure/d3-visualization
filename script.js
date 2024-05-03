@@ -49,11 +49,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
 
   cell.each(function([i, j]) {
+    const x = xScale[i];
+    const y = yScale[j];
+
     d3.select(this).selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("cx", d => xScale[variables[i]](d[variables[i]]))
-      .attr("cy", d => yScale[variables[j]](d[variables[j]]))
+      .attr("cx", d => x(d[i]))
+      .attr("cy", d => y(d[j]))
       .attr("r", 3)
       .attr("fill", d => d.DEATH_EVENT ? "red" : "green");
   });
@@ -81,9 +84,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     let selected = [];
     if (selection) {
       const [[x0, y0], [x1, y1]] = selection;
+      const x = xScale[i];
+      const y = yScale[j];
       selected = data.filter(d =>
-        x0 <= xScale[variables[i]](d[variables[i]]) && xScale[variables[i]](d[variables[i]]) <= x1 &&
-        y0 <= yScale[variables[j]](d[variables[j]]) && yScale[variables[j]](d[variables[j]]) <= y1
+        x0 <= x(d[i]) && x(d[i]) <= x1 &&
+        y0 <= y(d[j]) && y(d[j]) <= y1
       );
     }
     cell.selectAll("circle")
