@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', async function() {
   const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
 
-  const width = 1206;
+  const width = 1400;
   const height = width;
-  const padding = 10;
+  const padding = 20;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
   const columns = variables;
   const size = (width - (columns.length + 1) * padding) / columns.length + padding;
