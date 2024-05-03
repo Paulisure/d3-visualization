@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   const size = 150;
   const padding = 30; // Increased to give space for labels
-  const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia']; // Example set
+  const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
   const svg = d3.select("#scatterplot_matrix").append("svg")
     .attr("width", size * variables.length + padding)
     .attr("height", size * variables.length + padding)
