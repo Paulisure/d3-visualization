@@ -227,10 +227,22 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
     const fields = columns.filter(column => column !== "DEATH_EVENT");
   
     const impactData = fields.map(field => {
-      const selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
-      const selectedTotal = selectedData.filter(d => d[field] === "1").length;
-      const allPositive = allData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
-      const allTotal = allData.filter(d => d[field] === "1").length;
+      let selectedPositive, selectedTotal, allPositive, allTotal;
+  
+      if (["age", "ejection_fraction", "serum_sodium", "platelets"].includes(field)) {
+        const selectedMedian = d3.median(selectedData, d => +d[field]);
+        const allMedian = d3.median(allData, d => +d[field]);
+  
+        selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= selectedMedian).length;
+        selectedTotal = selectedData.filter(d => +d[field] >= selectedMedian).length;
+        allPositive = allData.filter(d => d.DEATH_EVENT === "1" && +d[field] >= allMedian).length;
+        allTotal = allData.filter(d => +d[field] >= allMedian).length;
+      } else {
+        selectedPositive = selectedData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
+        selectedTotal = selectedData.filter(d => d[field] === "1").length;
+        allPositive = allData.filter(d => d.DEATH_EVENT === "1" && d[field] === "1").length;
+        allTotal = allData.filter(d => d[field] === "1").length;
+      }
   
       const selectedPositivePercentage = selectedTotal > 0 ? selectedPositive / selectedTotal : 0;
       const allPositivePercentage = allTotal > 0 ? allPositive / allTotal : 0;
@@ -239,7 +251,7 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
   
       return {
         field,
-        impactFactor
+        impactFactor: isNaN(impactFactor) ? 0 : impactFactor
       };
     });
   
