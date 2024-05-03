@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const legend = svg.append("g")
         .attr("class", "legend")
         .attr("transform", `translate(${width - 200}, ${padding})`);
-    
+
     legend.append("circle").attr("cx", 0).attr("cy", 0).attr("r", 6).style("fill", "red");
     legend.append("text").attr("x", 10).attr("y", 5).text("Death Event").style("font-size", "12px").attr("alignment-baseline", "middle");
     legend.append("circle").attr("cx", 0).attr("cy", 20).attr("r", 6).style("fill", "green");
@@ -85,73 +85,73 @@ document.addEventListener('DOMContentLoaded', async function() {
     d3.select("#death-event-checkbox").on("change", function() {
         const checked = d3.select(this).property("checked");
         svg.selectAll("circle").attr("fill", d => checked && d.DEATH_EVENT === "1" ? "red" : (checked ? "none" : "green"));
-
-          // Ignore this line if you don't need the brushing behavior.
-    cell.call(brush, circle, svg, { padding, size, x, y, columns, data });
     });
-    
-    function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
-        const brush = d3.brush()
-            .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
-            .on("start", brushstarted)
-            .on("brush", brushed)
-            .on("end", brushended);
-    
-        cell.call(brush);
-    
-        let brushCell;
-    
-        // Clear the previously-active brush, if any.
-        function brushstarted() {
-            if (brushCell !== this) {
-                d3.select(brushCell).call(brush.move, null);
-                brushCell = this;
-            }
-        }
-    
-        // Highlight the selected circles.
-        function brushed({selection}, [i, j]) {
-            if (selection) {
-                const [[x0, y0], [x1, y1]] = selection;
-                svg.selectAll("circle")
-                    .classed("hidden", d =>
-                        x0 > x[i](d[columns[i]]) ||
-                        x1 < x[i](d[columns[i]]) ||
-                        y0 > y[j](d[columns[j]]) ||
-                        y1 < y[j](d[columns[j]])
-                    );
-            }
-        }
-    
-        // If the brush is empty, select all circles.
-        function brushended({ selection }) {
-            if (!selection) {
-                svg.selectAll("circle").classed("hidden", false);
-            }
+});
+
+function brush(cell, circle, svg, { padding, size, x, y, variables, data }) {
+    const brush = d3.brush()
+        .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
+        .on("start", brushstarted)
+        .on("brush", brushed)
+        .on("end", brushended);
+
+    cell.call(brush);
+
+    let brushCell;
+
+    // Clear the previously-active brush, if any.
+    function brushstarted() {
+        if (brushCell !== this) {
+            d3.select(brushCell).call(brush.move, null);
+            brushCell = this;
         }
     }
 
+    // Highlight the selected circles.
+    function brushed({selection}, [i, j]) {
+        if (selection) {
+            const [[x0, y0], [x1, y1]] = selection;
+            svg.selectAll("circle")
+                .classed("hidden", d =>
+                    x0 > x[i](d[variables[i]]) ||
+                    x1 < x[i](d[variables[i]]) ||
+                    y0 > y[j](d[variables[j]]) ||
+                    y1 < y[j](d[variables[j]])
+                );
+        }
+    }
 
+    // If the brush is empty, select all circles.
+    function brushended({ selection }) {
+        if (!selection) {
+            svg.selectAll("circle").classed("hidden", false);
+        }
+    }
+}
 
-
-
-  function updateBarChart(selectedData, allData, columns) {
+function updateBarChart(selectedData, allData, columns) {
     const barChartWidth = 500;
     const barChartHeight = 350;
     const barChartMargin = { top: 80, right: 20, bottom: 60, left: 60 };
-  
+
     const barChartSvg = d3.select("#bar_chart")
-      .html("") // Clear previous chart
-      .append("svg")
-      .attr("width", barChartWidth + barChartMargin.left + barChartMargin.right)
-      .attr("height", barChartHeight + barChartMargin.top + barChartMargin.bottom)
-      .append("g")
-      .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
-  
+        .html("") // Clear previous chart
+        .append("svg")
+        .attr("width", barChartWidth + barChartMargin.left + barChartMargin.right)
+        .attr("height", barChartHeight + barChartMargin.top + barChartMargin.bottom)
+        .append("g")
+        .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
+
     const fields = columns.filter(column => !["DEATH_EVENT"].includes(column));
-  
+
     const impactData = fields.map(field => {
-      let selectedPositive, selectedTotal, allPositive, allTotal;
+        // Calculation of impact factors as defined
+        const impactFactor = ...; // logic to calculate impact factor
+        return { field, impactFactor: isNaN(impactFactor) ? 0 : impactFactor };
+    });
+
+    impactData.sort((a, b) => b.impactFactor - a.impactFactor);
+
   
       if (["age", "ejection_fraction", "serum_sodium", "platelets"].includes(field)) {
         const selectedMedian = d3.median(selectedData, d => +d[field]);
@@ -272,3 +272,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       .attr("text-anchor", "middle")
       .text(d => d3.format(".2f")(d.impactFactor));
   }
+    // Call updateBarChart with initial data
+    updateBarChart(data, data, variables);
+});
