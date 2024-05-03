@@ -204,3 +204,103 @@ function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
     circle.classed("hidden", false);
   }
 }
+
+function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
+  // ... (brushing code remains the same)
+
+  // Highlight the selected circles.
+  function brushed({selection}, [i, j]) {
+    let selected = [];
+    if (selection) {
+      const [[x0, y0], [x1, y1]] = selection;
+      circle.classed("hidden",
+        d => x0 > x[i](d[columns[i]])
+          || x1 < x[i](d[columns[i]])
+          || y0 > y[j](d[columns[j]])
+          || y1 < y[j](d[columns[j]]));
+      selected = data.filter(
+        d => x0 < x[i](d[columns[i]])
+          && x1 > x[i](d[columns[i]])
+          && y0 < y[j](d[columns[j]])
+          && y1 > y[j](d[columns[j]]));
+    }
+    svg.property("value", selected).dispatch("input");
+
+    // Update the bar chart
+    updateBarChart(selected, data, columns);
+  }
+
+  // ... (brushended code remains the same)
+}
+
+function updateBarChart(selectedData, allData, columns) {
+  const barChartWidth = 400;
+  const barChartHeight = 300;
+  const barChartMargin = {top: 20, right: 20, bottom: 40, left: 40};
+
+  const barChartSvg = d3.select("#bar_chart")
+    .html("") // Clear previous chart
+    .append("svg")
+    .attr("width", barChartWidth + barChartMargin.left + barChartMargin.right)
+    .attr("height", barChartHeight + barChartMargin.top + barChartMargin.bottom)
+    .append("g")
+    .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
+
+  const percentageData = columns.map(column => {
+    const selectedPercentage = d3.mean(selectedData, d => +d[column]);
+    const allPercentage = d3.mean(allData, d => +d[column]);
+    return {column, selectedPercentage, allPercentage};
+  });
+
+  const xScale = d3.scaleBand()
+    .domain(columns)
+    .range([0, barChartWidth])
+    .padding(0.2);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(percentageData, d => Math.max(d.selectedPercentage, d.allPercentage))])
+    .range([barChartHeight, 0]);
+
+  barChartSvg.append("g")
+    .attr("transform", `translate(0,${barChartHeight})`)
+    .call(d3.axisBottom(xScale));
+
+  barChartSvg.append("g")
+    .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")));
+
+  const barGroups = barChartSvg.selectAll(".bar-group")
+    .data(percentageData)
+    .join("g")
+    .attr("class", "bar-group")
+    .attr("transform", d => `translate(${xScale(d.column)},0)`);
+
+  barGroups.append("rect")
+    .attr("class", "selected-bar")
+    .attr("x", xScale.bandwidth() / 4)
+    .attr("y", d => yScale(d.selectedPercentage))
+    .attr("width", xScale.bandwidth() / 2)
+    .attr("height", d => barChartHeight - yScale(d.selectedPercentage))
+    .attr("fill", "steelblue");
+
+  barGroups.append("rect")
+    .attr("class", "all-bar")
+    .attr("x", xScale.bandwidth() / 4 * 3)
+    .attr("y", d => yScale(d.allPercentage))
+    .attr("width", xScale.bandwidth() / 2)
+    .attr("height", d => barChartHeight - yScale(d.allPercentage))
+    .attr("fill", "lightgray");
+
+  barGroups.append("text")
+    .attr("class", "percentage-label")
+    .attr("x", xScale.bandwidth() / 2)
+    .attr("y", d => yScale(d.selectedPercentage) - 5)
+    .attr("text-anchor", "middle")
+    .text(d => d3.format(".0%")(d.selectedPercentage));
+
+  barGroups.append("text")
+    .attr("class", "percentage-label")
+    .attr("x", xScale.bandwidth() / 2)
+    .attr("y", d => yScale(d.allPercentage) - 5)
+    .attr("text-anchor", "middle")
+    .text(d => d3.format(".0%")(d.allPercentage));
+}
