@@ -1,14 +1,20 @@
 document.addEventListener('DOMContentLoaded', async function() {
   const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
-  
-  // Specify the chart's dimensions.
+
   const width = 1206;
   const height = width;
   const padding = 36;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
   const columns = variables;
   const size = (width - (columns.length + 1) * padding) / columns.length + padding;
-  
+
+  // Define the SVG element AFTER data is loaded and variables are set
+  const svg = d3.select("#scatterplot_matrix").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-padding, 0, width, height]);
+
+  // Text title added after SVG definition
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", padding / 2)
@@ -45,19 +51,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   const color = d3.scaleOrdinal()
     .domain(["0", "1"])
     .range(["green", "red"]);
-  
-  const svg = d3.select("#scatterplot_matrix").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [-padding, 0, width, height]);
-  
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", padding / 2)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "16px")
-    .attr("font-weight", "bold")
-    .text("Finding Meaning in Heart Disease Patient Outcomes");
   
   // Define the horizontal axis (it will be applied separately for each column).
   const axisx = d3.axisBottom()
