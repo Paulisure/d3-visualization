@@ -12,12 +12,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   const svg = d3.select("#scatterplot_matrix").append("svg")
     .attr("width", width)
     .attr("height", height)
-    .attr("viewBox", [-padding, 0, width, height]);
+    .attr("viewBox", `0 -${padding * 1.5} ${width} ${height}`);
 
   // Text title added after SVG definition
   svg.append("text")
     .attr("x", width / 2)
-    .attr("y", padding - 20) // Move it up a bit more
+    .attr("y", padding / 2)
     .attr("text-anchor", "middle")
     .attr("font-size", "16px")
     .attr("font-weight", "bold")
