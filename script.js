@@ -85,72 +85,55 @@ document.addEventListener('DOMContentLoaded', async function() {
     d3.select("#death-event-checkbox").on("change", function() {
         const checked = d3.select(this).property("checked");
         svg.selectAll("circle").attr("fill", d => checked && d.DEATH_EVENT === "1" ? "red" : (checked ? "none" : "green"));
+
+          // Ignore this line if you don't need the brushing behavior.
+    cell.call(brush, circle, svg, { padding, size, x, y, columns, data });
     });
-});
-
-
-
-  // Ignore this line if you don't need the brushing behavior.
-  cell.call(brush, circle, svg, { padding, size, x, y, columns, data });
-});
-
-function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
-  const brush = d3.brush()
-    .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
-    .on("start", brushstarted)
-    .on("brush", brushed)
-    .on("end", brushended);
-
-  cell.call(brush);
-
-  let brushCell;
-
-  // Clear the previously-active brush, if any.
-  function brushstarted() {
-    if (brushCell !== this) {
-      d3.select(brushCell).call(brush.move, null);
-      brushCell = this;
+    
+    function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
+        const brush = d3.brush()
+            .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
+            .on("start", brushstarted)
+            .on("brush", brushed)
+            .on("end", brushended);
+    
+        cell.call(brush);
+    
+        let brushCell;
+    
+        // Clear the previously-active brush, if any.
+        function brushstarted() {
+            if (brushCell !== this) {
+                d3.select(brushCell).call(brush.move, null);
+                brushCell = this;
+            }
+        }
+    
+        // Highlight the selected circles.
+        function brushed({selection}, [i, j]) {
+            if (selection) {
+                const [[x0, y0], [x1, y1]] = selection;
+                svg.selectAll("circle")
+                    .classed("hidden", d =>
+                        x0 > x[i](d[columns[i]]) ||
+                        x1 < x[i](d[columns[i]]) ||
+                        y0 > y[j](d[columns[j]]) ||
+                        y1 < y[j](d[columns[j]])
+                    );
+            }
+        }
+    
+        // If the brush is empty, select all circles.
+        function brushended({ selection }) {
+            if (!selection) {
+                svg.selectAll("circle").classed("hidden", false);
+            }
+        }
     }
-  }
 
-  // Highlight the selected circles.
-  function brushed({selection}, [i, j]) {
-      if (selection) {
-          const [[x0, y0], [x1, y1]] = selection;
-          svg.selectAll("circle")
-              .style("fill", d =>
-                  x0 <= x[i](d[columns[i]]) && x[i](d[columns[i]]) <= x1 &&
-                  y0 <= y[j](d[columns[j]]) && y[j](d[columns[j]]) <= y1 ? "red" : "#ccc"
-              )
-              .attr("r", d =>
-                  x0 <= x[i](d[columns[i]]) && x[i](d[columns[i]]) <= x1 &&
-                  y0 <= y[j](d[columns[j]]) && y[j](d[columns[j]]) <= y1 ? 5 : 2
-              ); // Larger size for selected, smaller for others
-      } else {
-          svg.selectAll("circle").style("fill", "red").attr("r", 3.5); // Reset to default
-      }
-  }
-      selected = data.filter(d =>
-        x0 < x[i](d[columns[i]])
-        && x1 > x[i](d[columns[i]])
-        && y0 < y[j](d[columns[j]])
-        && y1 > y[j](d[columns[j]])
-      );
-    }
-    svg.property("value", selected).dispatch("input");
 
-    // Update the bar chart
-    updateBarChart(selected, data, columns);
-  }
 
-  // If the brush is empty, select all circles.
-  function brushended({ selection }) {
-    if (selection) return;
-    svg.property("value", []).dispatch("input");
-    circle.classed("hidden", false);
-    updateBarChart(data, data, columns);
-  }
-}
+
 
   function updateBarChart(selectedData, allData, columns) {
     const barChartWidth = 500;
