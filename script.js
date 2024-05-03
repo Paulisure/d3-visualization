@@ -156,10 +156,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
 
   // Ignore this line if you don't need the brushing behavior.
-  cell.call(brush, circle, svg, {padding, size, x, y, columns, data});
+  cell.call(brush, circle, svg, { padding, size, x, y, columns, data });
 });
 
-function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
+function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
   const brush = d3.brush()
     .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
     .on("start", brushstarted)
@@ -179,50 +179,22 @@ function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
   }
 
   // Highlight the selected circles.
-  function brushed({selection}, [i, j]) {
+  function brushed({ selection }, [i, j]) {
     let selected = [];
     if (selection) {
       const [[x0, y0], [x1, y1]] = selection;
-      circle.classed("hidden",
-        d => x0 > x[i](d[columns[i]])
-          || x1 < x[i](d[columns[i]])
-          || y0 > y[j](d[columns[j]])
-          || y1 < y[j](d[columns[j]]));
-      selected = data.filter(
-        d => x0 < x[i](d[columns[i]])
-          && x1 > x[i](d[columns[i]])
-          && y0 < y[j](d[columns[j]])
-          && y1 > y[j](d[columns[j]]));
-    }
-    svg.property("value", selected).dispatch("input");
-  }
-
-  // If the brush is empty, select all circles.
-  function brushended({selection}) {
-    if (selection) return;
-    svg.property("value", []).dispatch("input");
-    circle.classed("hidden", false);
-  }
-}
-
-function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
-  // ... (brushing code remains the same)
-
-  // Highlight the selected circles.
-  function brushed({selection}, [i, j]) {
-    let selected = [];
-    if (selection) {
-      const [[x0, y0], [x1, y1]] = selection;
-      circle.classed("hidden",
-        d => x0 > x[i](d[columns[i]])
-          || x1 < x[i](d[columns[i]])
-          || y0 > y[j](d[columns[j]])
-          || y1 < y[j](d[columns[j]]));
-      selected = data.filter(
-        d => x0 < x[i](d[columns[i]])
-          && x1 > x[i](d[columns[i]])
-          && y0 < y[j](d[columns[j]])
-          && y1 > y[j](d[columns[j]]));
+      circle.classed("hidden", d =>
+        x0 > x[i](d[columns[i]])
+        || x1 < x[i](d[columns[i]])
+        || y0 > y[j](d[columns[j]])
+        || y1 < y[j](d[columns[j]])
+      );
+      selected = data.filter(d =>
+        x0 < x[i](d[columns[i]])
+        && x1 > x[i](d[columns[i]])
+        && y0 < y[j](d[columns[j]])
+        && y1 > y[j](d[columns[j]])
+      );
     }
     svg.property("value", selected).dispatch("input");
 
@@ -230,13 +202,19 @@ function brush(cell, circle, svg, {padding, size, x, y, columns, data}) {
     updateBarChart(selected, data, columns);
   }
 
-  // ... (brushended code remains the same)
+  // If the brush is empty, select all circles.
+  function brushended({ selection }) {
+    if (selection) return;
+    svg.property("value", []).dispatch("input");
+    circle.classed("hidden", false);
+    updateBarChart(data, data, columns);
+  }
 }
 
 function updateBarChart(selectedData, allData, columns) {
   const barChartWidth = 400;
   const barChartHeight = 300;
-  const barChartMargin = {top: 20, right: 20, bottom: 40, left: 40};
+  const barChartMargin = { top: 20, right: 20, bottom: 40, left: 40 };
 
   const barChartSvg = d3.select("#bar_chart")
     .html("") // Clear previous chart
@@ -249,7 +227,7 @@ function updateBarChart(selectedData, allData, columns) {
   const percentageData = columns.map(column => {
     const selectedPercentage = d3.mean(selectedData, d => +d[column]);
     const allPercentage = d3.mean(allData, d => +d[column]);
-    return {column, selectedPercentage, allPercentage};
+    return { column, selectedPercentage, allPercentage };
   });
 
   const xScale = d3.scaleBand()
