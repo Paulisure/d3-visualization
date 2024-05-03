@@ -11,14 +11,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
-    if (c === 'high_blood_pressure' || c === 'anaemia' || c === 'smoking' || c === 'diabetes' || c === 'sex') {
+    if (c === 'high_blood_pressure' || c === 'anaemia' || c === 'smoking' || c === 'diabetes') {
+      return d3.scaleOrdinal()
+        .domain(["0", "1"])
+        .range([padding / 2, size - padding / 2]);
+    } else if (c === 'sex') {
       return d3.scaleOrdinal()
         .domain(["0", "1"])
         .range([padding / 2, size - padding / 2]);
     } else if (c === 'platelets') {
       return d3.scaleLinear()
-        .domain(d3.extent(data, d => +d[c]))
-        .nice()
+        .domain([0, 800000])
         .rangeRound([padding / 2, size - padding / 2]);
     } else {
       return d3.scaleLinear()
@@ -49,9 +52,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     .tickSize(size * columns.length)
     .tickFormat(d => {
       if (typeof d === 'number') {
+        if (d >= 1000) {
+          return `${d / 1000}k`;
+        }
         return d;
       } else {
-        return d === '0' ? 'No' : 'Yes';
+        if (d === '0') {
+          return 'Female';
+        } else if (d === '1') {
+          return 'Male';
+        } else {
+          return d === '0' ? 'No' : 'Yes';
+        }
       }
     });
   
@@ -67,9 +79,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     .tickSize(-size * columns.length)
     .tickFormat(d => {
       if (typeof d === 'number') {
+        if (d >= 1000) {
+          return `${d / 1000}k`;
+        }
         return d;
       } else {
-        return d === '0' ? 'No' : 'Yes';
+        if (d === '0') {
+          return 'Female';
+        } else if (d === '1') {
+          return 'Male';
+        } else {
+          return d === '0' ? 'No' : 'Yes';
+        }
       }
     });
   
@@ -123,6 +144,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("r", 3.5)
     .attr("fill-opacity", 0.7)
     .attr("fill", d => color(d.DEATH_EVENT));
+
+  // Add event listener for the death event checkbox
+  d3.select("#death-event-checkbox").on("change", function() {
+    const checked = d3.select(this).property("checked");
+    if (checked) {
+      circle.attr("fill", d => d.DEATH_EVENT === "1" ? color(d.DEATH_EVENT) : "none");
+    } else {
+      circle.attr("fill", d => color(d.DEATH_EVENT));
+    }
+  });
 
   // Ignore this line if you don't need the brushing behavior.
   cell.call(brush, circle, svg, {padding, size, x, y, columns, data});
