@@ -215,16 +215,22 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
   }
 
   // Highlight the selected circles.
-  function brushed({ selection }, [i, j]) {
-    let selected = [];
-    if (selection) {
-      const [[x0, y0], [x1, y1]] = selection;
-      circle.classed("hidden", d =>
-        x0 > x[i](d[columns[i]])
-        || x1 < x[i](d[columns[i]])
-        || y0 > y[j](d[columns[j]])
-        || y1 < y[j](d[columns[j]])
-      );
+  function brushed({selection}, [i, j]) {
+      if (selection) {
+          const [[x0, y0], [x1, y1]] = selection;
+          svg.selectAll("circle")
+              .style("fill", d =>
+                  x0 <= x[i](d[columns[i]]) && x[i](d[columns[i]]) <= x1 &&
+                  y0 <= y[j](d[columns[j]]) && y[j](d[columns[j]]) <= y1 ? "red" : "#ccc"
+              )
+              .attr("r", d =>
+                  x0 <= x[i](d[columns[i]]) && x[i](d[columns[i]]) <= x1 &&
+                  y0 <= y[j](d[columns[j]]) && y[j](d[columns[j]]) <= y1 ? 5 : 2
+              ); // Larger size for selected, smaller for others
+      } else {
+          svg.selectAll("circle").style("fill", "red").attr("r", 3.5); // Reset to default
+      }
+  }
       selected = data.filter(d =>
         x0 < x[i](d[columns[i]])
         && x1 > x[i](d[columns[i]])
