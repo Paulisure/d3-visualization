@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   const width = 1206;
   const height = width;
-  const padding = 36;
+  const padding = 60;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
   const columns = variables;
   const size = (width - (columns.length + 1) * padding) / columns.length + padding;
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Text title added after SVG definition
   svg.append("text")
     .attr("x", width / 2)
-    .attr("y", padding / 2)
+    .attr("y", padding - 20) // Move it up a bit more
     .attr("text-anchor", "middle")
     .attr("font-size", "16px")
     .attr("font-weight", "bold")
@@ -42,6 +42,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         .domain(d3.extent(data, d => +d[c]))
         .rangeRound([padding / 2, size - padding / 2]);
     }
+  const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - 200}, ${padding})`);  // Position the legend in the upper right
+    
+  legend.append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", 6)
+    .style("fill", "red");
+  
+  legend.append("text")
+    .attr("x", 10)
+    .attr("y", 5)
+    .text("Death Event")
+    .style("font-size", "12px")
+    .attr("alignment-baseline","middle");
+  
+  legend.append("circle")
+    .attr("cx", 0)
+    .attr("cy", 20)
+    .attr("r", 6)
+    .style("fill", "green");
+  
+  legend.append("text")
+    .attr("x", 10)
+    .attr("y", 25)
+    .text("Non-Death Event")
+    .style("font-size", "12px")
+    .attr("alignment-baseline","middle");
+
   });
   
   // Define the companion vertical scales (one for each column).
@@ -218,9 +248,9 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
 }
 
   function updateBarChart(selectedData, allData, columns) {
-    const barChartWidth = 400;
-    const barChartHeight = 300;
-    const barChartMargin = { top: 60, right: 20, bottom: 60, left: 60 };
+    const barChartWidth = 500;
+    const barChartHeight = 350;
+    const barChartMargin = { top: 80, right: 20, bottom: 60, left: 60 };
   
     const barChartSvg = d3.select("#bar_chart")
       .html("") // Clear previous chart
@@ -230,7 +260,7 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
       .append("g")
       .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
   
-    const fields = columns.filter(column => !["DEATH_EVENT", "anaemia", "high_blood_pressure", "smoking"].includes(column));
+    const fields = columns.filter(column => !["DEATH_EVENT"].includes(column));
   
     const impactData = fields.map(field => {
       let selectedPositive, selectedTotal, allPositive, allTotal;
