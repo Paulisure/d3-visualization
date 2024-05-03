@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   const columns = variables;
   const size = (width - (columns.length + 1) * padding) / columns.length + padding;
   
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", padding / 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px")
+    .attr("font-weight", "bold")
+    .text("Finding Meaning in Heart Disease Patient Outcomes");
+  
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
     if (c === 'high_blood_pressure' || c === 'anaemia' || c === 'smoking' || c === 'diabetes') {
@@ -214,7 +222,7 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
   function updateBarChart(selectedData, allData, columns) {
     const barChartWidth = 400;
     const barChartHeight = 300;
-    const barChartMargin = { top: 20, right: 20, bottom: 40, left: 40 };
+    const barChartMargin = { top: 60, right: 20, bottom: 60, left: 60 };
   
     const barChartSvg = d3.select("#bar_chart")
       .html("") // Clear previous chart
@@ -224,7 +232,7 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
       .append("g")
       .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
   
-    const fields = columns.filter(column => column !== "DEATH_EVENT");
+    const fields = columns.filter(column => !["DEATH_EVENT", "anaemia", "high_blood_pressure", "smoking"].includes(column));
   
     const impactData = fields.map(field => {
       let selectedPositive, selectedTotal, allPositive, allTotal;
@@ -266,6 +274,36 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
       .domain([0, d3.max(impactData, d => d.impactFactor)])
       .range([barChartHeight, 0]);
   
+    // Add title and subtitle
+    const title = barChartSvg.append("text")
+      .attr("x", barChartWidth / 2)
+      .attr("y", -barChartMargin.top / 2)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "16px")
+      .attr("font-weight", "bold")
+      .text("Impact Factors of Selected Fields");
+  
+    const subtitle = barChartSvg.append("text")
+      .attr("x", barChartWidth / 2)
+      .attr("y", -barChartMargin.top / 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .text("Comparing the influence of fields on positive death events");
+  
+    // Improve axis labels
+    barChartSvg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -barChartHeight / 2)
+      .attr("y", -barChartMargin.left + 15)
+      .attr("text-anchor", "middle")
+      .text("Impact Factor");
+  
+    barChartSvg.append("text")
+      .attr("x", barChartWidth / 2)
+      .attr("y", barChartHeight + barChartMargin.bottom - 5)
+      .attr("text-anchor", "middle")
+      .text("Fields");
+  
     barChartSvg.append("g")
       .attr("transform", `translate(0,${barChartHeight})`)
       .call(d3.axisBottom(xScale))
@@ -276,6 +314,9 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
     barChartSvg.append("g")
       .call(d3.axisLeft(yScale));
   
+    // Highlight top influential fields
+    const topCount = 3; // Number of top influential fields to highlight
+  
     barChartSvg.selectAll(".bar")
       .data(impactData)
       .join("rect")
@@ -284,7 +325,27 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
       .attr("y", d => yScale(d.impactFactor))
       .attr("width", xScale.bandwidth())
       .attr("height", d => barChartHeight - yScale(d.impactFactor))
-      .attr("fill", "steelblue");
+      .attr("fill", (d, i) => i < topCount ? "darkred" : "steelblue");
+  
+    // Add tooltips
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+  
+    barChartSvg.selectAll(".bar")
+      .on("mouseover", function(event, d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.9);
+        tooltip.html(`Field: ${d.field}<br>Impact Factor: ${d3.format(".2f")(d.impactFactor)}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 28) + "px");
+      })
+      .on("mouseout", function(d) {
+        tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+      });
   
     barChartSvg.selectAll(".bar-label")
       .data(impactData)
