@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const size = 150;
   const padding = 20;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
+
   const svg = d3.select("#scatterplot_matrix").append("svg")
     .attr("width", size * variables.length + padding)
     .attr("height", size * variables.length + padding)
@@ -35,6 +36,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         .attr("fill", d => d.DEATH_EVENT === "1" ? "red" : "green");
     });
 
+  // Add x-axis labels
+  svg.selectAll(".x-label")
+    .data(variables)
+    .enter().append("text")
+    .attr("class", "x-label")
+    .attr("x", (d, i) => i * size + size / 2)
+    .attr("y", size * variables.length + padding / 2)
+    .attr("text-anchor", "middle")
+    .text(d => d);
+
+  // Add y-axis labels
+  svg.selectAll(".y-label")
+    .data(variables)
+    .enter().append("text")
+    .attr("class", "y-label")
+    .attr("x", -padding / 2)
+    .attr("y", (d, i) => i * size + size / 2)
+    .attr("text-anchor", "end")
+    .attr("dy", ".32em")
+    .attr("transform", "rotate(-90)")
+    .text(d => d);
+
   // Define the brush
   const brush = d3.brush()
     .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
@@ -44,15 +67,22 @@ document.addEventListener('DOMContentLoaded', async function() {
   cell.call(brush);
 
   // Function to handle brush events
-  function brushed(event, [x, y]) {
-    if (event.selection) {
-      const [[x0, y0], [x1, y1]] = event.selection;
-      svg.selectAll("circle").classed("hidden", d => {
-        return x0 > xScale[x](d[x]) || x1 < xScale[x](d[x]) ||
-               y0 > yScale[y](d[y]) || y1 < yScale[y](d[y]);
+  function brushed(event) {
+    const selection = event.selection;
+    
+    svg.selectAll("circle").classed("hidden", function(d) {
+      let isHidden = false;
+      
+      variables.forEach(x => {
+        variables.forEach(y => {
+          if (selection && (selection[0][0] > xScale[x](d[x]) || selection[1][0] < xScale[x](d[x]) ||
+                            selection[0][1] > yScale[y](d[y]) || selection[1][1] < yScale[y](d[y]))) {
+            isHidden = true;
+          }
+        });
       });
-    } else {
-      svg.selectAll("circle").classed("hidden", false);
-    }
+      
+      return isHidden;
+    });
   }
 });
