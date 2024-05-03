@@ -15,42 +15,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     .attr("viewBox", [-padding, 0, width, height]);
   svg.append("text")
     .attr("x", (width - 150) / 2) // Center the title within the scatterplot matrix
-    .attr("y", padding / 2)
+    .attr("y", padding / 6)
     .attr("text-anchor", "middle")
-    .attr("font-size", "16px")
+    .attr("font-size", "20px")
     .attr("font-weight", "bold")
     .text("Finding Meaning in Heart Disease Patient Outcomes");
-  // Create the legend
-  const legendData = [
-    { label: "Non-Death Event", color: "#009E73" },
-    { label: "Death Event", color: "#D55E00" }
-  ];
-  
-  const legend = svg.append("g")
-    .attr("class", "legend")
-    .attr("transform", `translate(${width - 120}, ${padding})`);
-  
-  const legendItem = legend.selectAll(".legend-item")
-    .data(legendData)
-    .enter()
-    .append("g")
-    .attr("class", "legend-item")
-    .attr("transform", (d, i) => `translate(0, ${i * 20})`);
-  
-  legendItem.append("rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", 12)
-    .attr("height", 12)
-    .style("fill", d => d.color);
-  
-  legendItem.append("text")
-    .attr("x", 18)
-    .attr("y", 9)
-    .attr("dy", ".35em")
-    .style("text-anchor", "start")
-    .style("font-size", "12px")
-    .text(d => d.label);
   
   // Define the horizontal scales (one for each row).
   const x = columns.map(c => {
