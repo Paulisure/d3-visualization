@@ -211,74 +211,83 @@ function brush(cell, circle, svg, { padding, size, x, y, columns, data }) {
   }
 }
 
-function updateBarChart(selectedData, allData, columns) {
-  const barChartWidth = 400;
-  const barChartHeight = 300;
-  const barChartMargin = { top: 20, right: 20, bottom: 40, left: 40 };
+  function updateBarChart(selectedData, allData, columns) {
+    const barChartWidth = 400;
+    const barChartHeight = 300;
+    const barChartMargin = { top: 20, right: 20, bottom: 40, left: 40 };
+  
+    const barChartSvg = d3.select("#bar_chart")
+      .html("") // Clear previous chart
+      .append("svg")
+      .attr("width", barChartWidth + barChartMargin.left + barChartMargin.right)
+      .attr("height", barChartHeight + barChartMargin.top + barChartMargin.bottom)
+      .append("g")
+      .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
+  
+    const selectedDeathEvents = selectedData.reduce((acc, d) => {
+      acc[d.DEATH_EVENT] = (acc[d.DEATH_EVENT] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const allDeathEvents = allData.reduce((acc, d) => {
+      acc[d.DEATH_EVENT] = (acc[d.DEATH_EVENT] || 0) + 1;
+      return acc;
+    }, {});
+  
+    const selectedTotal = selectedData.length;
+    const allTotal = allData.length;
+  
+    const selectedPositivePercentage = (selectedDeathEvents["1"] || 0) / selectedTotal;
+    const selectedNegativePercentage = (selectedDeathEvents["0"] || 0) / selectedTotal;
+    const allPositivePercentage = (allDeathEvents["1"] || 0) / allTotal;
+    const allNegativePercentage = (allDeathEvents["0"] || 0) / allTotal;
+  
+    const xScale = d3.scaleBand()
+      .domain(["Selected", "All"])
+      .range([0, barChartWidth])
+      .padding(0.2);
+  
+    const yScale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([barChartHeight, 0]);
+  
+    barChartSvg.append("g")
+      .attr("transform", `translate(0,${barChartHeight})`)
+      .call(d3.axisBottom(xScale));
+  
+    barChartSvg.append("g")
+      .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")));
+  
+    const barGroups = barChartSvg.selectAll(".bar-group")
+      .data([
+        { category: "Selected", positivePercentage: selectedPositivePercentage, negativePercentage: selectedNegativePercentage },
+        { category: "All", positivePercentage: allPositivePercentage, negativePercentage: allNegativePercentage }
+      ])
+      .join("g")
+      .attr("class", "bar-group")
+      .attr("transform", d => `translate(${xScale(d.category)},0)`);
+  
+    barGroups.append("rect")
+      .attr("class", "positive-bar")
+      .attr("x", 0)
+      .attr("y", d => yScale(d.positivePercentage))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => barChartHeight - yScale(d.positivePercentage))
+      .attr("fill", "red");
+  
+    barGroups.append("rect")
+      .attr("class", "negative-bar")
+      .attr("x", 0)
+      .attr("y", d => yScale(1))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => barChartHeight - yScale(d.negativePercentage))
+      .attr("fill", "green");
+  
+    barGroups.append("text")
+      .attr("class", "percentage-label")
+      .attr("x", xScale.bandwidth() / 2)
+      .attr("y", d => yScale(d.positivePercentage) - 5)
+      .attr("text-anchor", "middle")
+      .text(d => d3.format(".0%")(d.positivePercentage));
+  }
 
-  const barChartSvg = d3.select("#bar_chart")
-    .html("") // Clear previous chart
-    .append("svg")
-    .attr("width", barChartWidth + barChartMargin.left + barChartMargin.right)
-    .attr("height", barChartHeight + barChartMargin.top + barChartMargin.bottom)
-    .append("g")
-    .attr("transform", `translate(${barChartMargin.left},${barChartMargin.top})`);
-
-  const percentageData = columns.map(column => {
-    const selectedPercentage = d3.mean(selectedData, d => +d[column]);
-    const allPercentage = d3.mean(allData, d => +d[column]);
-    return { column, selectedPercentage, allPercentage };
-  });
-
-  const xScale = d3.scaleBand()
-    .domain(columns)
-    .range([0, barChartWidth])
-    .padding(0.2);
-
-  const yScale = d3.scaleLinear()
-    .domain([0, d3.max(percentageData, d => Math.max(d.selectedPercentage, d.allPercentage))])
-    .range([barChartHeight, 0]);
-
-  barChartSvg.append("g")
-    .attr("transform", `translate(0,${barChartHeight})`)
-    .call(d3.axisBottom(xScale));
-
-  barChartSvg.append("g")
-    .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")));
-
-  const barGroups = barChartSvg.selectAll(".bar-group")
-    .data(percentageData)
-    .join("g")
-    .attr("class", "bar-group")
-    .attr("transform", d => `translate(${xScale(d.column)},0)`);
-
-  barGroups.append("rect")
-    .attr("class", "selected-bar")
-    .attr("x", xScale.bandwidth() / 4)
-    .attr("y", d => yScale(d.selectedPercentage))
-    .attr("width", xScale.bandwidth() / 2)
-    .attr("height", d => barChartHeight - yScale(d.selectedPercentage))
-    .attr("fill", "steelblue");
-
-  barGroups.append("rect")
-    .attr("class", "all-bar")
-    .attr("x", xScale.bandwidth() / 4 * 3)
-    .attr("y", d => yScale(d.allPercentage))
-    .attr("width", xScale.bandwidth() / 2)
-    .attr("height", d => barChartHeight - yScale(d.allPercentage))
-    .attr("fill", "lightgray");
-
-  barGroups.append("text")
-    .attr("class", "percentage-label")
-    .attr("x", xScale.bandwidth() / 2)
-    .attr("y", d => yScale(d.selectedPercentage) - 5)
-    .attr("text-anchor", "middle")
-    .text(d => d3.format(".0%")(d.selectedPercentage));
-
-  barGroups.append("text")
-    .attr("class", "percentage-label")
-    .attr("x", xScale.bandwidth() / 2)
-    .attr("y", d => yScale(d.allPercentage) - 5)
-    .attr("text-anchor", "middle")
-    .text(d => d3.format(".0%")(d.allPercentage));
-}
