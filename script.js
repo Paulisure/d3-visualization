@@ -1,88 +1,148 @@
 document.addEventListener('DOMContentLoaded', async function() {
   const data = await d3.csv("heart_failure_clinical_records_dataset.csv");
-
-  const size = 150;
-  const padding = 30; // Increased to give space for labels
+  
+  // Specify the chart's dimensions.
+  const width = 928;
+  const height = width;
+  const padding = 28;
   const variables = ['age', 'serum_creatinine', 'ejection_fraction', 'high_blood_pressure', 'anaemia', 'smoking', 'serum_sodium', 'diabetes', 'sex', 'platelets'];
+  const columns = variables;
+  const size = (width - (columns.length + 1) * padding) / columns.length + padding;
+  
+  // Define the horizontal scales (one for each row).
+  const x = columns.map(c => d3.scaleLinear()
+    .domain(d3.extent(data, d => +d[c]))
+    .rangeRound([padding / 2, size - padding / 2]));
+  
+  // Define the companion vertical scales (one for each column).
+  const y = x.map(x => x.copy().range([size - padding / 2, padding / 2]));
+  
+  // Define the color scale.
+  const color = d3.scaleOrdinal()
+    .domain(["0", "1"])
+    .range(["green", "red"]);
+  
   const svg = d3.select("#scatterplot_matrix").append("svg")
-    .attr("width", size * variables.length + padding)
-    .attr("height", size * variables.length + padding)
-    .style("font", "10px sans-serif");
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-padding, 0, width, height]);
+  
+  svg.append("style")
+    .text(`circle.hidden { fill: #000; fill-opacity: 1; r: 1px; }`);
+  
+  // Define the horizontal axis (it will be applied separately for each column).
+  const axisx = d3.axisBottom()
+    .ticks(6)
+    .tickSize(size * columns.length);
+  
+  const xAxis = g => g.selectAll("g").data(x).join("g")
+    .attr("transform", (d, i) => `translate(${i * size},0)`)
+    .each(function(d) { return d3.select(this).call(axisx.scale(d)); })
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").attr("stroke", "#ddd"));
+  
+  // Define the vertical axis (it will be applied separately for each row).
+  const axisy = d3.axisLeft()
+    .ticks(6)
+    .tickSize(-size * columns.length);
+  
+  const yAxis = g => g.selectAll("g").data(y).join("g")
+    .attr("transform", (d, i) => `translate(0,${i * size})`)
+    .each(function(d) { return d3.select(this).call(axisy.scale(d)); })
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll(".tick line").attr("stroke", "#ddd"));
 
-  const xScale = {}, yScale = {};
-  variables.forEach(variable => {
-    const domain = d3.extent(data, d => +d[variable]);
-    xScale[variable] = d3.scaleLinear().domain(domain).range([padding / 2, size - padding / 2]);
-    yScale[variable] = d3.scaleLinear().domain(domain).range([size - padding / 2, padding / 2]);
+  svg.append("g")
+    .call(xAxis);
+  
+  svg.append("g")
+    .call(yAxis);
+  
+  svg.append("g")
+    .style("font", "bold 10px sans-serif")
+    .style("pointer-events", "none")
+    .selectAll("text")
+    .data(columns)
+    .join("text")
+    .attr("transform", (d, i) => `translate(${i * size},${i * size})`)
+    .attr("x", padding)
+    .attr("y", padding)
+    .attr("dy", ".71em")
+    .text(d => d);
+
+  const cell = svg.append("g")
+    .selectAll("g")
+    .data(d3.cross(d3.range(columns.length), d3.range(columns.length)))
+    .join("g")
+    .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
+  
+  cell.append("rect")
+    .attr("fill", "none")
+    .attr("stroke", "#aaa")
+    .attr("x", padding / 2 + 0.5)
+    .attr("y", padding / 2 + 0.5)
+    .attr("width", size - padding)
+    .attr("height", size - padding);
+  
+  cell.each(function([i, j]) {
+    d3.select(this).selectAll("circle")
+      .data(data.filter(d => !isNaN(d[columns[i]]) && !isNaN(d[columns[j]])))
+      .join("circle")
+      .attr("cx", d => x[i](d[columns[i]]))
+      .attr("cy", d => y[j](d[columns[j]]));
   });
 
-  svg.selectAll(".x.axis")
-    .data(variables)
-    .enter().append("g")
-    .attr("class", "x axis")
-    .attr("transform", (d, i) => `translate(${i * size + padding}, ${size * variables.length})`)
-    .each(function(d) { d3.select(this).call(d3.axisBottom(xScale[d]).ticks(6)); })
-    .append("text")
-    .style("text-anchor", "middle")
-    .attr("y", -6)
-    .attr("x", size / 2)
-    .attr("dy", "2.1em")
-    .text(d => d);
+  const circle = cell.selectAll("circle")
+    .attr("r", 3.5)
+    .attr("fill-opacity", 0.7)
+    .attr("fill", d => color(d.DEATH_EVENT));
 
-  svg.selectAll(".y.axis")
-    .data(variables)
-    .enter().append("g")
-    .attr("class", "y axis")
-    .attr("transform", (d, i) => `translate(0, ${i * size})`)
-    .each(function(d) { d3.select(this).call(d3.axisLeft(yScale[d]).ticks(6)); })
-    .append("text")
-    .style("text-anchor", "middle")
-    .attr("y", size / 2)
-    .attr("x", -padding)
-    .attr("dy", "-1.5em")
-    .attr("transform", "rotate(-90)")
-    .text(d => d);
+  // Ignore this line if you don't need the brushing behavior.
+  cell.call(brush, circle, svg, {padding, size, x, y, columns});
+});
 
+function brush(cell, circle, svg, {padding, size, x, y, columns}) {
   const brush = d3.brush()
-    .extent([[0, 0], [size, size]])
-    .on("start brush", brushed)
+    .extent([[padding / 2, padding / 2], [size - padding / 2, size - padding / 2]])
+    .on("start", brushstarted)
+    .on("brush", brushed)
     .on("end", brushended);
-
-  let selected = [];
-
-  const cell = svg.selectAll(".cell")
-    .data(d3.cross(variables, variables))
-    .enter().append("g")
-    .attr("class", "cell")
-    .attr("transform", ([x, y]) => `translate(${variables.indexOf(x) * size}, ${variables.indexOf(y) * size})`)
-    .each(plot);
 
   cell.call(brush);
 
-  function plot([x, y]) {
-    d3.select(this).selectAll("circle")
-      .data(data)
-      .enter().append("circle")
-      .attr("cx", d => xScale[x](+d[x]))
-      .attr("cy", d => yScale[y](+d[y]))
-      .attr("r", 4)
-      .style("fill", d => selected.includes(d) ? "red" : "steelblue");
-  }
+  let brushCell;
 
-  function brushed(event) {
-    if (event.selection) {
-      const [[x0, y0], [x1, y1]] = event.selection;
-      selected = data.filter(d => {
-        return xScale[x](+d[x]) >= x0 && xScale[x](+d[x]) <= x1 &&
-               yScale[y](+d[y]) >= y0 && yScale[y](+d[y]) <= y1;
-      });
-    } else {
-      selected = [];
+  // Clear the previously-active brush, if any.
+  function brushstarted() {
+    if (brushCell !== this) {
+      d3.select(brushCell).call(brush.move, null);
+      brushCell = this;
     }
-    svg.selectAll("circle").style("fill", d => selected.includes(d) ? "red" : "steelblue");
   }
 
-  function brushended() {
-    if (!d3.event.selection) svg.selectAll("circle").style("fill", "steelblue");
+  // Highlight the selected circles.
+  function brushed({selection}, [i, j]) {
+    let selected = [];
+    if (selection) {
+      const [[x0, y0], [x1, y1]] = selection;
+      circle.classed("hidden",
+        d => x0 > x[i](d[columns[i]])
+          || x1 < x[i](d[columns[i]])
+          || y0 > y[j](d[columns[j]])
+          || y1 < y[j](d[columns[j]]));
+      selected = data.filter(
+        d => x0 < x[i](d[columns[i]])
+          && x1 > x[i](d[columns[i]])
+          && y0 < y[j](d[columns[j]])
+          && y1 > y[j](d[columns[j]]));
+    }
+    svg.property("value", selected).dispatch("input");
   }
-});
+
+  // If the brush is empty, select all circles.
+  function brushended({selection}) {
+    if (selection) return;
+    svg.property("value", []).dispatch("input");
+    circle.classed("hidden", false);
+  }
+}
