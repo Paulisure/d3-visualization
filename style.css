@@ -1,17 +1,28 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-#chart {
-    width: 80%;
-    height: 80%;
-    border: 1px solid #ccc;
-    padding: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatterplot Matrix</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .frame {
+            fill: none;
+            stroke: #aaa;
+        }
+        .brush .extent {
+            fill-opacity: 0.3;
+            stroke: #fff;
+            shape-rendering: crispEdges;
+        }
+        .hidden {
+            opacity: 0.1;  /* Adjust opacity to make hidden elements partially visible */
+            /* display: none;  Uncomment this line if you prefer to completely hide elements */
+        }
+    </style>
+</head>
+<body>
+    <div id="scatterplot_matrix"></div>
+    <script src="script.js"></script>
+</body>
+</html>
