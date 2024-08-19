@@ -31,7 +31,7 @@ The visualization revealed several interesting insights, including:
 ## Video Presentation
 For a detailed explanation of the project and its findings, watch the narrated video:
 
-[![Heart Disease Mortality Visualization](https://img.youtube.com/vi/c-NpIGo31B4/0.jpg)](https://www.youtube.com/watch?v=c-NpIGo31B4)
+[![Heart Disease Mortality Visualization](https://img.youtube.com/vi/c-NpIGo31B4/0.jpg)](https://youtu.be/Kw18zni2_Oc)
 
 ## Future Work
 This visualization template has potential for broader applications in data analysis and could be adapted for use with other datasets.
