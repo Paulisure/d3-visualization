@@ -4,7 +4,7 @@
 This project focuses on visualizing heart disease mortality causes based on metadata and patient outcomes. The goal is to create an interactive visualization that allows users to explore the relationships between various factors and heart disease mortality.
 
 ## Motivation
-This project was inspired by a personal connection to heart disease, as the creator's father-in-law was undergoing a heart transplant procedure. The aim was to learn more about the disease and create a visual tool similar to what was shown in the UpSet video, enabling easy selection and analysis of data from Excel.
+The aim was to learn more about the disease and create a visual tool similar to what was shown in the UpSet video, enabling easy selection and analysis of data from Excel.
 
 ## Data Source
 The dataset used in this project was sourced from the [Kaggle Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/cardiovasculardisease).
